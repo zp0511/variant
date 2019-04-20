@@ -1,0 +1,76 @@
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext.kotlin_version = '1.3.21'
+    repositories {
+        google()
+        jcenter()
+
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.3.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+ext{
+    currentFlavor = getCurrentFlavor()
+}
+
+/**
+ * 获取当前编译的flavor-name
+ */
+def getCurrentFlavor() {
+    //定义一个默认指定的flavor用于异常情况下的编译通过
+    final defaultFlavor = "variant_a"
+    Gradle gradle = getGradle()
+    //.getTaskNames()[0]也可以.但Jenkins构建时请使用getTaskRequests
+    String taskName = gradle.getStartParameter().getTaskRequests().toString()
+    println "taskName : " + taskName
+    if (taskName != null) {
+        Pattern pattern
+        if (taskName.contains("assemble")) {
+            if (taskName.contains("Release") || taskName.contains("Debug")|| taskName.contains("Prerelease")|| taskName.contains("Beta")) {
+                pattern = Pattern.compile("assemble(\\w+)(Release|Debug|Prerelease|Beta)")
+            } else {
+                pattern = Pattern.compile("assemble(\\w+)")
+            }
+        } else {
+            if (taskName.contains("Release") || taskName.contains("Debug")|| taskName.contains("Prerelease")|| taskName.contains("Beta")) {
+                pattern = Pattern.compile("generate(\\w+)(Release|Debug|Prerelease|Beta)")
+            } else {
+                pattern = Pattern.compile("generate(\\w+)")
+            }
+        }
+        Matcher matcher = pattern.matcher(taskName)
+        if (matcher.find()) {
+            String flavor = matcher.group(1)
+            //将task导致的Flavor首字母大写重新转回小写
+            char[] c = flavor.toCharArray()
+            c[0] = Character.toLowerCase(c[0])
+            flavor = new String(c)
+            println "currentFlavor:" + flavor
+            return flavor
+        } else {
+            println "currentFlavor:cannot_find_current_flavor"
+            return defaultFlavor
+        }
+    }
+    return defaultFlavor
+}

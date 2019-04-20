@@ -1,0 +1,1 @@
+include ':app', ':variants:variant_a', ':variants:variant_b'

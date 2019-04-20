@@ -1,0 +1,8 @@
+ext {
+    vatiant = [
+            applicationId: 'com.manji.variant_nj'
+    ]
+    map = [
+            MAP_KEY: '2cbd23ec039b3cd27e48d40c2f47bbef'
+    ]
+}
